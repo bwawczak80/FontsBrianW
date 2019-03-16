@@ -23,6 +23,10 @@ class FontListViewController: UITableViewController {
         let preferredTableViewFont = UIFont.preferredFont(forTextStyle: UIFont.TextStyle.headline)
         cellPointSize = preferredTableViewFont.pointSize
         tableView.estimatedRowHeight = cellPointSize
+        
+        if showsFavorites {
+            navigationItem.rightBarButtonItem = editButtonItem
+        }
     }
     
     func fontForDisplay(atIndexPath indexPath: NSIndexPath) -> UIFont {
@@ -53,6 +57,30 @@ class FontListViewController: UITableViewController {
         cell.detailTextLabel?.text = fontNames[indexPath.row]
 
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return showsFavorites
+    }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if !showsFavorites {
+            return
+        }
+        
+        if editingStyle == UITableViewCell.EditingStyle.delete {
+            let favorite = fontNames[indexPath.row]
+            FavoritesList.sharedFavoritesList.removeFavorite(fontName: favorite)
+            fontNames = FavoritesList.sharedFavoritesList.favorites
+            
+            tableView.deleteRows(at: [indexPath], with: UITableView.RowAnimation.fade)
+        }
+        
+    }
+    
+    override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        FavoritesList.sharedFavoritesList.moveItem(fromIndex: sourceIndexPath.row, toIndex: destinationIndexPath.row)
+        fontNames = FavoritesList.sharedFavoritesList.favorites
     }
     
     //MARK: - Navigation
